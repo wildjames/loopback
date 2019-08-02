@@ -13,17 +13,31 @@ except:
 
 newvalues = {}
 with open(modname, 'r') as f:
+    f.readline()
     for line in f:
         line = line.strip()
-        if line == '':
-            break
+        if line == '' or line.startswith('#'):
+            continue
+
+        #        par =    <mean>    <up err>   <do err>
+        line = line.replace("=", ' ')
+        # I'm splitting by spaces, so double spaces confuse me. Par them down.
+        while '  ' in line:
+            print("line:\n{}".format(line))
+            line = line.replace("  ", " ")
+
 
         line = line.split(' ')
 
-        par = line[0]
-        value = float(line[2])
+        par = line[0].replace("_core", '')
+        value = float(line[1])
 
         newvalues[par] = value
+
+print("New values:")
+from pprint import pprint
+pprint(newvalues)
+
 
 pars = newvalues.keys()
 
@@ -38,17 +52,17 @@ with open(mcname, 'r') as f:
             par = line_components[0]
             if par in pars:
                 value = newvalues[par]
-                # print("\n\nI know this one! line:\n{}\nPar:  {}\nValue:  {}".format(line, par, value))
+                print("\nI know this one!\nPar:  {}\nValue:  {}".format(par, value))
                 newline = line_components.copy()
                 newline[2] = value
-                newline = "{:>10} = {:>12} {:>12} {:>12} {:>12} {:>12}\n".format(
-                    newline[0], 
-                    newline[2], 
-                    newline[3], 
-                    newline[4], 
-                    newline[5], 
+                newline = "{:>15} = {:>12.5f} {:>12} {:>12} {:>12} {:>12}\n".format(
+                    newline[0],
+                    newline[2],
+                    newline[3],
+                    newline[4],
+                    newline[5],
                     newline[6]
-                    )
+                )
                 # print("Altered line:")
                 # print(newline)
                 mcmc_file[-1] = newline
