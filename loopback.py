@@ -8,6 +8,8 @@ try:
     oname = args[2]
 except:
     print("Usage: loopback.py [mcmc_input] [modparams] [new mcmc_input]")
+    print("\n\nThis script takes a modparams file, and loops its results back")
+    print("into 'mcmc_input', outputting the result to 'new mcmc_input'")
     exit()
 
 
