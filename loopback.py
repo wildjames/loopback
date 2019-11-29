@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 
 args = sys.argv[1:]
 
@@ -13,35 +14,16 @@ except:
     exit()
 
 
+data = pd.read_csv(modname, index_col=0)
 newvalues = {}
-with open(modname, 'r') as f:
-    f.readline()
-    for line in f:
-        line = line.strip()
-        if line == '' or line.startswith('#'):
-            continue
-
-        #        par =    <mean>    <up err>   <do err>
-        line = line.replace("=", ' ')
-        # I'm splitting by spaces, so double spaces confuse me. Par them down.
-        while '  ' in line:
-            print("line:\n{}".format(line))
-            line = line.replace("  ", " ")
-
-
-        line = line.split(' ')
-
-        par = line[0].replace("_core", '')
-        value = float(line[1])
-
-        newvalues[par] = value
+for k, v in data['mean'].to_dict().items():
+    if k.endswith('_core'):
+        k = k.replace('_core', '')
+    newvalues[k] = v
 
 print("New values:")
 from pprint import pprint
 pprint(newvalues)
-
-
-pars = newvalues.keys()
 
 mcmc_file = []
 with open(mcname, 'r') as f:
@@ -52,7 +34,7 @@ with open(mcname, 'r') as f:
         line_components = line.split()
         if len(line_components) > 0:
             par = line_components[0]
-            if par in pars:
+            if par in newvalues.keys():
                 value = newvalues[par]
                 print("\nI know this one!\nPar:  {}\nValue:  {}".format(par, value))
                 newline = line_components.copy()
@@ -65,8 +47,6 @@ with open(mcname, 'r') as f:
                     newline[5],
                     newline[6]
                 )
-                # print("Altered line:")
-                # print(newline)
                 mcmc_file[-1] = newline
 
 if oname[-4:] != '.dat':
